@@ -1,1 +1,162 @@
-/*Copyright (c) 2024 ksoft https://www.dummysoftware.com*/var lifeline,keepAliveTimer,MEjDG=new Array,wpRET=[],wHgAN=[],audio=null,FJsUz={on:chrome.runtime.getURL("images/refresh-on-38.png"),off:chrome.runtime.getURL("images/refresh-off-38.png"),restart:chrome.runtime.getURL("images/refresh-restart-38.png")};async function onInitialize(){importScripts(chrome.runtime.getURL("scripts/utility.js"),chrome.runtime.getURL("scripts/date.js")),chrome.tabs.query({},e=>wPdJx(e)),chrome.tabs.onUpdated.addListener(function(e,t,i){LHTAR(i,t)}),chrome.tabs.onRemoved.addListener(function(e,t){LTVRZ(e)}),chrome.runtime.onMessage.addListener(function(e,t,i){onMessage(e,i)}),chrome.runtime.onInstalled.addListener(function(e){Iejys(e)}),chrome.notifications.onClicked.addListener(function(e){DuxpJ(e)}),chrome.alarms.onAlarm.addListener(function(e){onAlarm(e)}),keepAlive(),chrome.runtime.onConnect.addListener(e=>{"keepAlive"!==e.name||keepAliveTimer||(lifeline=e,keepAliveTimer=setTimeout(keepAliveForced,295e3),e.onDisconnect.addListener(keepAliveForced))})}async function onAlarm(e){var t=ybaCm(null,e.name.split("-").pop());t&&(-1!=e.name.indexOf("alarm-seconds-")?await jpgsR(t.tab):-1!=e.name.indexOf("alarm-")&&(e=await getOptions(t.tab),await oOXwF(t.tab,e.random)))}function Iejys(e){var t=chrome.runtime.getManifest().version;"install"==e.reason?chrome.tabs.create({url:"https://www.dummysoftware.com/easy-auto-refresh/?action=install&new="+t}):"update"==e.reason&&0<e.previousVersion&&e.previousVersion<6&&chrome.tabs.create({url:"https://www.dummysoftware.com/easy-auto-refresh/?action=update&old="+e.previousVersion+"&new="+t})}function wPdJx(e){for(var t,i=0;t=e[i];i++)spNoN(t.url)||itqEi(t)}function LHTAR(e,t){t=t&&Object.keys(t).includes("audible")&&1===Object.keys(t).length;spNoN(e.url)||t||(itqEi(e),jtmDI(e))}function LTVRZ(e){AENIn({id:e},!1)}async function itqEi(e){1==(await getOptions(e)).refresh?(chrome.action.setIcon({path:FJsUz.on,tabId:e.id}),onRequest({tab:e,refresh:!0})):(chrome.action.setIcon({path:FJsUz.off,tabId:e.id}),AENIn(e,!0))}function spNoN(e){return-1<e.indexOf("chrome:")}function ybaCm(e,t){for(var i=0;i<MEjDG.length;i++){var a=MEjDG[i],n=e?e.id:t;if(a.tab.id==n)return a}return null}function dBkTW(e){for(var t=0;t<MEjDG.length;t++)if(MEjDG[t]==e)return void MEjDG.splice(t,1)}function AENIn(e,t,i){var a=ybaCm(e);return null!=a&&(-1!=a.intervalId.toString().indexOf("alarm-")?chrome.alarms.clear(a.intervalId):clearInterval(a.intervalId),-1!=a.timerIntervalId.toString().indexOf("alarm-seconds-")?chrome.alarms.clear(a.timerIntervalId):clearInterval(a.timerIntervalId),dBkTW(a),delete wHgAN["tab"+e.id],t&&(chrome.action.setIcon({path:FJsUz.off,tabId:e.id}),chrome.action.setBadgeText({tabId:e.id,text:""}),chrome.action.setTitle({tabId:e.id,title:"Easy Auto Refresh"})),null!=e.url)&&(-1==e.url.indexOf("chrome.google.com")&&-1==e.url.indexOf("file://")&&chrome.scripting.executeScript({target:{tabId:e.id},func:function(){keyPressManager.remove()}}),(i=i||{}).lastRefresh=null,i.nextRefresh=null),i}function vgIeh(e,t,i){var a=ybaCm(e);return null!=a&&a.intervalValue==t&&(i.isDomain?getDomain(a.tab.url)==getDomain(e.url):a.tab.url==e.url)}async function downloadPageHTML(t){try{if(-1==t.url.indexOf("chrome://")&&-1==t.url.indexOf("chrome-extension://")&&-1==t.url.indexOf("file://")){var e=await chrome.scripting.executeScript({target:{tabId:t.id},func:function(){return document.documentElement.outerHTML}});if(e&&e[0]&&e[0].result){var c="data:text/html;charset=utf-8,"+encodeURIComponent(e[0].result);chrome.downloads.download({url:c,filename:"upwork/upwork.html",saveAs:!1})}}}catch(e){}}function downloadAfterRefresh(tabId){var listener=function(updatedTabId,changeInfo){if(updatedTabId===tabId&&changeInfo.status==="complete"){chrome.tabs.onUpdated.removeListener(listener),chrome.tabs.get(tabId,function(t){t&&setTimeout(function(){downloadPageHTML(t)},30000)})}};chrome.tabs.onUpdated.addListener(listener)}async function NcTpK(t,e){var i,a,n=new Date,r=new Date(wpRET["tab"+t.id]),r=Math.round((n-r)/1e3);(isNaN(r)||1<r)&&((r=1==e.isAutoClick&&null!=e.autoClickId&&0<e.autoClickId.length&&"1"==e.autoClickIdValid)&&!e.isAutoClickAfterRefresh?(YcyAq(t,e.autoClickId,e.autoClickDelay,e.isAutoClickAfterRefresh),wpRET["tab"+t.id]=n):1==e.isUrlList&&e.urlList&&0<e.urlList.length?(n=0,(i=e.urlListLast)&&(-1<(n=e.urlList.indexOf(i))?n++:n=0,n>=e.urlList.length)&&(n=0),(i=e.urlList[n])&&((a=(n=e.urlListLast=i).split("/"))&&a.length<=3&&(n+="/"),await saveOptions({url:n},e),chrome.tabs.update(t.id,{url:i},function(e){kxtdv(e)}),downloadAfterRefresh(t.id))):-1==t.url.indexOf("chrome.google.com")&&-1==t.url.indexOf("file://")?(chrome.scripting.executeScript({target:{tabId:t.id},func:function(){location.reload(!0)}},e=>{kxtdv(e,function(e){e&&chrome.tabs.update(t.id,{url:t.url})}),downloadAfterRefresh(t.id)})):(chrome.tabs.update(t.id,{url:t.url},function(){downloadAfterRefresh(t.id)})),r)&&e.isAutoClickAfterRefresh&&(a=ybaCm(t))&&(a.autoClickId=e.autoClickId)}async function refresh(e,i){i.isAllTabs?chrome.tabs.query({windowId:e.windowId},async function(e){for(var t in e)await NcTpK(e[t],i)}):await NcTpK(e,i)}async function oOXwF(e){var t=await getOptions(e),i=1==t.isRandom?(t=await NCetA(e)).random:(Ztthw(t)?t=await pEBwI(e):t).interval;1==t.isCache&&chrome.browsingData.removeCache({since:0}),await refresh(e,t),t=updateLastRefresh(t,i),await saveOptions(e,t),chrome.runtime.sendMessage({message:"updateLastRefresh",lastRefresh:t.lastRefresh,nextRefresh:t.nextRefresh,tabId:e.id})}async function onRequest(e){var t,i=e.options||await getOptions(e.tab);1==e.refresh?(t=1e3*i.interval,Ztthw(i)?t=1e3*(i=await pEBwI(e.tab)).interval:null!=i.random&&(t=1e3*i.random),vgIeh(e.tab,t,i)&&!e.force||(i=AENIn(e.tab,!1,i),t/1e3<60?intervalId=setInterval(function(){oOXwF(e.tab,i.random)},t):(intervalId="alarm-"+e.tab.id,chrome.alarms.create(intervalId,{periodInMinutes:t/1e3/60})),timerIntervalId=setInterval(function(){jpgsR(e.tab)},1e3),MEjDG.push({tab:e.tab,intervalId:intervalId,timerIntervalId:timerIntervalId,intervalValue:t}),i=updateLastRefresh(i,t/1e3),await saveOptions(e.tab,i)),-1==e.tab.url.indexOf("chrome.google.com")&&-1==e.tab.url.indexOf("file://")&&chrome.scripting.executeScript({target:{tabId:e.tab.id},func:function(e){keyPressManager.setup(e)},args:[e.tab.id]}),t=Ztthw(i)?i.nextRefresh:t/1e3+" seconds",chrome.action.setIcon({path:FJsUz.on,tabId:e.tab.id}),chrome.action.setTitle({tabId:e.tab.id,title:"Easy Auto Refresh ON : "+t})):(i=AENIn(e.tab,!0,i),await saveOptions(e.tab,i))}async function onMessage(i,e){"resetInterval"==i.action?chrome.tabs.get(i.tabId,async function(i){await onRequest({tab:i,refresh:!0,force:!0}),chrome.action.setIcon({path:FJsUz.restart,tabId:i.id}),setTimeout(function(){var t=i;chrome.tabs.get(t.id,function(e){t.url==e.url&&chrome.action.setIcon({path:FJsUz.on,tabId:i.id})})},1e3)}):"getPath"==i.message?chrome.tabs.query({active:!0},async function(e){var e=e[0],t=await getOptions(e);t.autoClickId=i.value,t.autoClickIdValid=1,await saveOptions(e,t)}):"refresh"==i.message&&await onRequest(i),e()}async function NCetA(e){var t=await getOptions(e),i=t.interval,i=parseInt(i,10),i=(i<=5&&(i=60),getRandomInt(5,i));return t.random=i,await saveOptions(e,t),chrome.runtime.sendMessage({message:"updateRandomInterval",value:i,tabId:e.id}),await onRequest({tab:e,refresh:!0}),t}function Ztthw(e){var t=!1;return t=e?1==e.isTimeList&&e.timeList&&e.timeList.length:t}async function pEBwI(e){for(var t=await getOptions(e),i=t.interval,a=[],n=-1,r=-1,o=new Date,s=0;s<t.timeList.length;s++){var c,l=t.timeList[s],d=l.match(/^(\d{1,2}):(\d{2})$/);d&&2<=d.length&&(c=d[1],d=d[2],c=60*parseInt(c)*60+parseInt(60*d)-(60*o.getHours()*60+60*o.getMinutes()+o.getSeconds()),a.push({time:l,seconds:c}),0<c&&(-1===n||c<a[n].seconds)?n=a.length-1:(-1===r||c<a[r].seconds)&&(r=a.length-1))}return-1<n?i=a[n].seconds:-1<r&&(i=86400+(i=a[r].seconds)),t.interval=i,await saveOptions(e,t),chrome.runtime.sendMessage({message:"updateTimeInterval",value:i,tabId:e.id}),t}async function jpgsR(e){var t=await getOptions(e),i=new Date,a=Date.parse(t.nextRefresh),n=t.isTimer?1e4:10;isNaN(a)||(a=new Date(a),-1<(a=Math.round((a-i)/1e3))&&a<n?chrome.action.setBadgeText({tabId:e.id,text:""+a}):(chrome.action.setBadgeText({tabId:e.id,text:""}),Ztthw(t)||chrome.action.setIcon({path:FJsUz.on,tabId:e.id})))}function nBdiW(t,i,a,n){var r=new Date,e=new Date(wHgAN["tab"+t.id]),e=Math.round((r-e)/1e3);(isNaN(e)||3<e)&&chrome.scripting.executeScript({target:{tabId:t.id},files:["scripts/content.js"]},e=>{chrome.tabs.sendMessage(t.id,{action:"findText"+i,isText:a},async function(e){void 0!==e&&(!n&&1==e.result||n&&!e.result)&&(wHgAN["tab"+t.id]=r,e=await getOptions(t),chrome.notifications.create("notification-"+t.windowId+"-"+t.id,{type:"basic",title:"Easy Auto Refresh",message:`The keyword "${i.trim()}" was ${n?"NOT":""} found in Tab ${t.index+1}. `+(e.isNotifyStop?"\nRefresh has stopped.":""),contextMessage:t.url,eventTime:r.getTime(),iconUrl:chrome.runtime.getURL("images/notification.png")}),e.notifySound&&(!audio||audio.src&&!audio.src.endsWith(e.notifySound))&&chrome.scripting.executeScript({target:{tabId:t.id},func:function(e){keyPressManager.play(e)},args:[e.notifySound]}),e.isNotifyStop)&&((e=AENIn(t,!0,e)).refresh=!1,await saveOptions(t,e))})})}async function jtmDI(e){var t,i,a,n=await getOptions(e);1==n.refresh&&n.isNotify&&n.notifyText&&(t=!1,a=n.notifyDelay,0<(i=n.notifyText).toUpperCase().indexOf("[TEXT]")&&(t=!0,i=i.replace(/\[TEXT\]/i,"")),(matches=i.match(/(.*)\[(\d+)\]/))&&3<=matches.length&&(a=parseInt(matches[2]))&&(a<0?a=0:9<a&&(a=9),i=matches[1]),a?setTimeout(function(){nBdiW(e,i,t,n.isNotifyNotFound)},1e3*a):nBdiW(e,i,t,n.isNotifyNotFound)),n.isAutoClickAfterRefresh&&(a=ybaCm(e))&&a.autoClickId&&(delete a.autoClickId,YcyAq(e,n.autoClickId,n.autoClickDelay,n.isAutoClickAfterRefresh))}function YcyAq(t,e,i,a){i=a?i||0:0,setTimeout(function(){chrome.scripting.executeScript({target:{tabId:t.id},func:function(e){keyPressManager.click(e)},args:[e]},e=>{jtmDI(t)})},1e3*i)}function DuxpJ(e){var t,i=e.match(/notification-(\d+)-(\d+)/);null!=i&&3==i.length&&(t=parseInt(i[1]),i=parseInt(i[2]),chrome.windows.update(t,{focused:!0}),chrome.tabs.update(i,{highlighted:!0}),chrome.notifications.clear(e))}function kxtdv(e,t){if(void 0===e){e=chrome.extension.lastError;if(e&&e.message)if(-1!=e.message.indexOf("No tab with id")){var i=e.message.match(/\d+/);i&&1==i.length&&AENIn({id:i[0]})}else if(-1!=e.message.indexOf("Cannot access contents of the page"))return void(t&&t(!0))}t&&t()}function keepAliveForced(){lifeline?.disconnect(),lifeline=null,clearTimeout(keepAliveTimer),keepAliveTimer=null,keepAlive()}async function keepAlive(){if(!lifeline){for(const e of await chrome.tabs.query({url:"*://*/*"}))try{return await chrome.scripting.executeScript({target:{tabId:e.id},func:()=>chrome.runtime.connect({name:"keepAlive"})}),void chrome.tabs.onUpdated.removeListener(retryOnTabUpdate)}catch(e){}chrome.tabs.onUpdated.addListener(retryOnTabUpdate)}}async function retryOnTabUpdate(e,t,i){t.url&&/^(file|https?):/.test(t.url)&&keepAlive()}onInitialize();
+// Per-tab in-memory state
+// tabId → { running, url, minInterval, maxInterval, folder, downloadedForNav, countdownTimer, nextIn }
+const tabStates = {};
+
+const DOWNLOAD_DELAY_MS = 15000;
+const ALARM_PREFIX = 'refresh_';
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function sanitizeFilename(url) {
+  try {
+    const u = new URL(url);
+    return (u.hostname + u.pathname)
+      .replace(/[^a-zA-Z0-9_\-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/, '') || 'page';
+  } catch {
+    return 'page';
+  }
+}
+
+function alarmName(tabId) { return ALARM_PREFIX + tabId; }
+
+function broadcastStatus(tabId) {
+  const s = tabStates[tabId];
+  if (!s) return;
+  try {
+    chrome.runtime.sendMessage({
+      action: 'statusUpdate',
+      tabId,
+      running: s.running,
+      nextIn: s.nextIn
+    });
+  } catch {}
+}
+
+function startCountdown(tabId, seconds) {
+  const s = tabStates[tabId];
+  if (!s) return;
+  clearInterval(s.countdownTimer);
+  s.nextIn = seconds;
+  broadcastStatus(tabId);
+  s.countdownTimer = setInterval(() => {
+    if (!s.running) { clearInterval(s.countdownTimer); return; }
+    s.nextIn = Math.max(0, s.nextIn - 1);
+    broadcastStatus(tabId);
+  }, 1000);
+}
+
+async function downloadPageHTML(tabId, folder, url) {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => document.documentElement.outerHTML
+    });
+    if (results?.[0]?.result) {
+      const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(results[0].result);
+      const name    = sanitizeFilename(url);
+      const ts      = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      chrome.downloads.download({ url: dataUrl, filename: folder + '/' + name + '_' + ts + '.html', saveAs: false });
+    }
+  } catch (e) {
+    console.error('[AutoRefresh] download failed:', e);
+  }
+}
+
+function scheduleNextRefresh(tabId) {
+  const s = tabStates[tabId];
+  if (!s || !s.running) return;
+  const delay = getRandomInt(s.minInterval, s.maxInterval);
+  startCountdown(tabId, delay);
+  chrome.alarms.create(alarmName(tabId), { delayInMinutes: delay / 60 });
+}
+
+function start(tabId, config) {
+  // Stop any existing loop for this tab
+  stopTab(tabId, false);
+
+  tabStates[tabId] = {
+    running: true,
+    url: config.url,
+    minInterval: config.minInterval,
+    maxInterval: config.maxInterval,
+    folder: config.folder,
+    downloadedForNav: false,
+    countdownTimer: null,
+    nextIn: null
+  };
+
+  // Navigate current tab to the URL
+  chrome.tabs.update(tabId, { url: config.url });
+  broadcastStatus(tabId);
+}
+
+function stopTab(tabId, broadcast = true) {
+  const s = tabStates[tabId];
+  if (s) {
+    s.running = false;
+    clearInterval(s.countdownTimer);
+    s.nextIn = null;
+  }
+  chrome.alarms.clear(alarmName(tabId));
+  if (broadcast) {
+    tabStates[tabId] = tabStates[tabId] || {};
+    tabStates[tabId].running = false;
+    tabStates[tabId].nextIn  = null;
+    broadcastStatus(tabId);
+  }
+}
+
+// Tab finishes loading → download once, then schedule next refresh
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+  if (changeInfo.status !== 'complete') return;
+  const s = tabStates[tabId];
+  if (!s || !s.running) return;
+  if (s.downloadedForNav) return;   // already handled this load
+  s.downloadedForNav = true;
+
+  // 5-second settle, then download + schedule next
+  setTimeout(async () => {
+    if (!s.running) return;
+    await downloadPageHTML(tabId, s.folder, s.url);
+    scheduleNextRefresh(tabId);
+  }, DOWNLOAD_DELAY_MS);
+});
+
+// Alarm fires → reload the tab
+chrome.alarms.onAlarm.addListener(alarm => {
+  if (!alarm.name.startsWith(ALARM_PREFIX)) return;
+  const tabId = parseInt(alarm.name.slice(ALARM_PREFIX.length), 10);
+  const s = tabStates[tabId];
+  if (!s || !s.running) return;
+  s.downloadedForNav = false;   // allow next download
+  chrome.tabs.reload(tabId, { bypassCache: true });
+});
+
+// If user closes the tab, stop the loop
+chrome.tabs.onRemoved.addListener(tabId => {
+  stopTab(tabId, false);
+  delete tabStates[tabId];
+});
+
+// Messages from popup
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.action === 'start') {
+    start(msg.tabId, msg.config);
+    sendResponse({ ok: true });
+    return;
+  }
+  if (msg.action === 'stop') {
+    stopTab(msg.tabId);
+    sendResponse({ ok: true });
+    return;
+  }
+  if (msg.action === 'getStatus') {
+    const s = tabStates[msg.tabId];
+    sendResponse({ running: !!s?.running, nextIn: s?.nextIn ?? null });
+    return;
+  }
+});
